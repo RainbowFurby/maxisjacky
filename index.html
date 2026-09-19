@@ -19,23 +19,46 @@
     };
 
     // ═══════════════════════════════════════════
-    // GOOGLE FORM CONFIG — leads → Google Sheets
+    // GOOGLE FORM CONFIG — every form submission on this site (main enquiry form
+    // and the 30s/scroll popup) flows into this same Google Form → its linked
+    // Google Sheet → email notification (turned on in the Form's Responses tab).
     // TODO: replace with your real values once the Google Form is created.
-    //   1. Create a Google Form with fields: Name, Phone, Plan (see chat for exact list).
+    //   1. Create a Google Form with fields: Name, Phone, Address, Plan, Notes, Date
+    //      (Address and Notes only get used by the main enquiry form; the popup
+    //      only sends Name/Phone/Plan/Date, that's fine, those fields just arrive blank.
+    //      Date is auto-filled by the site itself at submit time, not typed by the user.)
     //   2. Use Forms' "Get pre-filled link" (⋮ menu), fill dummy values in each field,
     //      generate the link, then copy each field's entry.XXXXXXXXX id from that link.
     //   3. formActionUrl = the same link but ending in /formResponse instead of /viewform
     //      (swap the URL params after the ? for nothing — just the base path + /formResponse).
-    // Leaving these as placeholders means the popup form UI works but submissions
-    // won't reach a real sheet until you swap these in.
+    //   4. In the Form's Responses tab, click the bell icon and turn on
+    //      "Get email notifications for new responses" — that's the email part.
+    // Leaving these as placeholders means both forms still work as UI (WhatsApp
+    // still opens as normal) but submissions won't reach a real sheet until you
+    // swap these in.
     const GOOGLE_FORM = {
-      formActionUrl: "https://docs.google.com/forms/d/e/PASTE_YOUR_FORM_ID_HERE/formResponse",
+      formActionUrl: "https://docs.google.com/forms/d/e/1FAIpQLSe6CPbo6jksXNqFB48M2tH2o11ZOPvtSTvRvnMXGxH9YKq2sw/formResponse",
       fields: {
-        name:  "entry.PASTE_NAME_ENTRY_ID",
-        phone: "entry.PASTE_PHONE_ENTRY_ID",
-        plan:  "entry.PASTE_PLAN_ENTRY_ID",
+        name:    "entry.1098424702",
+        phone:   "entry.646209160",
+        plan:    "entry.2093425873",
+        address: "entry.2096229602",
+        notes:   "entry.1240865259",
+        date:    "entry.1602551708",
       },
     };
+
+    // Shared helper: silently posts whichever fields are given into the Google Form.
+    // Fields left out (or whose entry id is still a placeholder) are just skipped.
+    function submitToGoogleSheet(fields) {
+      if (GOOGLE_FORM.formActionUrl.includes('PASTE_')) return;
+      const body = new URLSearchParams();
+      Object.entries(fields).forEach(([key, value]) => {
+        const entryId = GOOGLE_FORM.fields[key];
+        if (entryId && !entryId.includes('PASTE_') && value) body.append(entryId, value);
+      });
+      fetch(GOOGLE_FORM.formActionUrl, { method: 'POST', mode: 'no-cors', body }).catch(() => {});
+    }
   </script>
 
   <title>Maxis Home Fibre Plans | Authorised Reseller — Free Router & Installation</title>
@@ -346,9 +369,9 @@
       transition: all 0.18s var(--ease); cursor: pointer; border: none; background: none;
     }
     .toggle-btn.active {
-      background: var(--white);
-      color: var(--ink);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08);
+      background: var(--green);
+      color: var(--white);
+      box-shadow: 0 2px 8px rgba(64,199,6,0.35);
     }
     .addon-tier-toggle {
       display: inline-flex;
@@ -364,9 +387,9 @@
       transition: all 0.18s var(--ease); cursor: pointer; border: none; background: none;
     }
     .addon-tier-btn.active {
-      background: var(--white);
-      color: var(--ink);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08);
+      background: var(--green);
+      color: var(--white);
+      box-shadow: 0 2px 8px rgba(64,199,6,0.35);
     }
     .plans-section { background: var(--off); }
     .plans__grid {
@@ -461,6 +484,97 @@
       width: 13px; height: 13px; fill: var(--green);
       flex-shrink: 0; margin-top: 1px;
     }
+    .plan-card__addons {
+      margin: 4px 0 12px;
+      padding: 10px 10px 6px;
+      border-radius: 10px;
+      background: rgba(64,199,6,0.07);
+      border: 1px solid rgba(64,199,6,0.18);
+    }
+    .plan-card__addons-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase;
+      color: var(--green-dk); margin-bottom: 8px;
+    }
+
+    /* ─── ADD-ON DROPDOWN (single-select, per plan card) ── */
+    .addon-dropdown {
+      position: relative;
+    }
+    .addon-dropdown__trigger {
+      width: 100%;
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      background: var(--white);
+      border: 1.5px solid rgba(64,199,6,0.3);
+      border-radius: 10px;
+      padding: 9px 11px;
+      font-family: var(--font);
+      cursor: pointer;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .addon-dropdown__trigger:hover { border-color: var(--green); }
+    .addon-dropdown.open .addon-dropdown__trigger {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(64,199,6,0.15);
+    }
+    .addon-dropdown__trigger-text {
+      font-size: 12px; font-weight: 600; color: var(--ink);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .addon-dropdown__trigger-price {
+      font-size: 11px; font-weight: 700; color: var(--green-dk); margin-left: 6px; flex-shrink: 0;
+    }
+    .addon-dropdown__chevron {
+      width: 11px; height: 11px; flex-shrink: 0; color: var(--green-dk);
+      transition: transform 0.18s var(--ease);
+    }
+    .addon-dropdown.open .addon-dropdown__chevron { transform: rotate(180deg); }
+    .addon-dropdown__panel {
+      position: absolute; left: 0; right: 0; top: calc(100% + 6px); z-index: 20;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.16), 0 2px 8px rgba(0,0,0,0.08);
+      padding: 6px;
+      max-height: 0; overflow: hidden;
+      opacity: 0; pointer-events: none;
+      transform: translateY(-4px);
+      transition: max-height 0.2s var(--ease), opacity 0.15s, transform 0.18s var(--ease);
+    }
+    .addon-dropdown.open .addon-dropdown__panel {
+      max-height: 260px; overflow-y: auto;
+      opacity: 1; pointer-events: all;
+      transform: translateY(0);
+    }
+    .addon-dropdown__option {
+      width: 100%;
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      padding: 8px 9px;
+      border-radius: 8px;
+      font-family: var(--font);
+      cursor: pointer;
+      transition: background 0.12s;
+      text-align: left;
+    }
+    .addon-dropdown__option:hover { background: var(--green-bg); }
+    .addon-dropdown__option.selected { background: var(--green-bg); }
+    .addon-dropdown__option--none { color: var(--slate-l); font-style: italic; }
+    .addon-dropdown__option-name { font-size: 12px; font-weight: 600; color: var(--ink); }
+    .addon-dropdown__option-price { font-size: 11.5px; font-weight: 700; color: var(--green-dk); white-space: nowrap; }
+    .plan-card--pop .addon-dropdown__trigger {
+      background: rgba(255,255,255,0.06);
+      border-color: rgba(64,199,6,0.45);
+    }
+    .plan-card--pop .addon-dropdown__trigger-text { color: rgba(255,255,255,0.9); }
+    .plan-card--pop .addon-dropdown__chevron { color: var(--green); }
+    .plan-card--pop .addon-dropdown.open .addon-dropdown__trigger {
+      box-shadow: 0 0 0 3px rgba(64,199,6,0.25);
+    }
+    .plan-card--pop .addon-dropdown-label { color: var(--green); }
+    .plan-card--pop .plan-card__addons-label { color: var(--green); }
+    .plan-card--pop .plan-card__addons {
+      background: rgba(64,199,6,0.14);
+      border-color: rgba(64,199,6,0.35);
+    }
     .plan-card__cta {
       display: flex; align-items: center; justify-content: center; gap: 8px;
       width: 100%; padding: 13px 16px;
@@ -469,6 +583,7 @@
       border: 1.5px solid var(--green);
       color: var(--green-d); background: transparent;
       transition: all 0.15s var(--ease);
+      margin-top: auto;
     }
     .plan-card__cta:hover { background: var(--green); color: var(--white); }
     .icon-slot {
@@ -482,6 +597,20 @@
     .icon-slot svg { width: 16px; height: 16px; stroke: var(--green); fill: none; }
 
     /* ─── DEVICE ADD-ONS ─────────────────────── */
+    .addons-section {
+      position: relative;
+      background:
+        radial-gradient(ellipse at 15% 0%, rgba(64,199,6,0.16) 0%, transparent 55%),
+        radial-gradient(ellipse at 85% 100%, rgba(64,199,6,0.12) 0%, transparent 55%),
+        linear-gradient(180deg, #EAFBDD 0%, #F5FDF0 45%, var(--white) 100%);
+    }
+    @media (max-width: 640px) {
+      .addons-section {
+        background:
+          radial-gradient(ellipse at 50% 0%, rgba(64,199,6,0.22) 0%, transparent 60%),
+          linear-gradient(180deg, #E3F9D2 0%, #F5FDF0 55%, var(--white) 100%);
+      }
+    }
     .addon__grid {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
@@ -1011,7 +1140,7 @@
 </section>
 
 <!-- ── DEVICE ADD-ONS ───────────────────────────────── -->
-<section class="section" id="addons">
+<section class="section addons-section" id="addons">
   <div class="container">
     <div class="sh">
       <p class="sh__label">Bundle &amp; Save</p>
@@ -1339,7 +1468,7 @@
   <svg viewBox="0 0 16 16" class="wa-float__icon" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.9 7.9 0 0 0 13.6 2.326zM7.994 14.521a6.6 6.6 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.56 6.56 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592m3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.588-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.1-.445-1.076-.61-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.73.73 0 0 0-.529.247c-.182.198-.691.677-.691 1.652 0 .975.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.99.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.337-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232"/></svg>
 </a>
 
-<!-- ── LEAD CAPTURE POPUP (15s dwell or scroll-to-bottom) ────── -->
+<!-- ── LEAD CAPTURE POPUP (30s dwell or scroll-to-bottom) ────── -->
 <div class="lead-modal-overlay" id="lead-modal-overlay">
   <div class="lead-modal" role="dialog" aria-modal="true" aria-labelledby="lead-modal-title">
     <div class="lead-modal__head">
@@ -1389,7 +1518,7 @@
   if (document.getElementById('footer-name')) document.getElementById('footer-name').textContent = 'Authorised Reseller';
   if (document.getElementById('footer-copy')) document.getElementById('footer-copy').textContent = `© ${RESELLER.year} ${RESELLER.name}. All rights reserved.`;
 
-  const GOOGLE_TAG = ' (via Google)';
+  const GOOGLE_TAG = ' (Website Promo)';
   const waBase = `https://wa.me/${RESELLER.whatsapp}?text=`;
   const genericWA = waBase + encodeURIComponent(RESELLER.waMessage + GOOGLE_TAG);
 
@@ -1510,14 +1639,78 @@
     btn.addEventListener('click', () => setAddonTier(btn.dataset.tier));
   });
 
-  // Selecting "Apply Now" on the 500Mbps or 1Gbps plan card also sets the add-on tier
+  // Selecting "Apply Now": sets the add-on tier for 500Mbps/1Gbps, and includes any
+  // add-ons checked inside that card in the WhatsApp message.
   document.getElementById('plans-grid').addEventListener('click', e => {
     const cta = e.target.closest('.plan-card__cta');
     if (!cta) return;
     const card = cta.closest('.plan-card');
     if (!card) return;
-    if (card.dataset.speed === '500' && card.dataset.unit === 'Mbps') setAddonTier('500');
-    if (card.dataset.speed === '1' && card.dataset.unit === 'Gbps') setAddonTier('1000');
+
+    const speed = card.dataset.speed, unit = card.dataset.unit;
+    let tier = null;
+    if (speed === '500' && unit === 'Mbps') { tier = '500'; setAddonTier('500'); }
+    if (speed === '1' && unit === 'Gbps')   { tier = '1000'; setAddonTier('1000'); }
+
+    const priceEl = card.querySelector('.plan-card__price');
+    const price = priceEl ? priceEl.textContent.trim() : '';
+    let text = `Hi, I'd like to sign up for the Maxis Home Fibre ${speed}${unit} plan at ${price}/month.`;
+
+    if (tier) {
+      const dropdown = card.querySelector('.addon-dropdown');
+      const selectedId = dropdown ? dropdown.dataset.selectedId : '';
+      if (selectedId) {
+        const a = ADDON_TIERS[tier].find(x => x.id === selectedId);
+        if (a) text += ` I'd also like to add: ${a.name} (${a.price}).`;
+      }
+    }
+    text += ` Can you help me?${GOOGLE_TAG}`;
+
+    e.preventDefault();
+    window.open(waBase + encodeURIComponent(text), '_blank');
+  });
+
+  // Add-on dropdown: open/close + single-select, one per plan card
+  document.getElementById('plans-grid').addEventListener('click', e => {
+    const trigger = e.target.closest('.addon-dropdown__trigger');
+    const option  = e.target.closest('.addon-dropdown__option');
+
+    if (trigger) {
+      const dropdown = trigger.closest('.addon-dropdown');
+      const isOpen = dropdown.classList.contains('open');
+      document.querySelectorAll('.addon-dropdown.open').forEach(d => d.classList.remove('open'));
+      if (!isOpen) dropdown.classList.add('open');
+      return;
+    }
+
+    if (option) {
+      const dropdown = option.closest('.addon-dropdown');
+      const id = option.dataset.addonId;
+      const name = option.dataset.addonName;
+      const price = option.dataset.addonPrice;
+
+      dropdown.dataset.selectedId = id;
+      dropdown.querySelectorAll('.addon-dropdown__option').forEach(o => o.classList.remove('selected'));
+      option.classList.add('selected');
+
+      const triggerText = dropdown.querySelector('.addon-dropdown__trigger-text');
+      const existingPriceTag = dropdown.querySelector('.addon-dropdown__trigger-price');
+      if (existingPriceTag) existingPriceTag.remove();
+
+      if (id) {
+        triggerText.textContent = name;
+        triggerText.insertAdjacentHTML('afterend', `<span class="addon-dropdown__trigger-price">${price}</span>`);
+      } else {
+        triggerText.textContent = 'Select a device (optional)';
+      }
+      dropdown.classList.remove('open');
+      return;
+    }
+  });
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.addon-dropdown')) {
+      document.querySelectorAll('.addon-dropdown.open').forEach(d => d.classList.remove('open'));
+    }
   });
 
   renderAddonSection();
@@ -1596,6 +1789,28 @@
         <ul class="plan-card__feats">
           ${p.feats.map(f => `<li class="plan-card__feat">${CHECK_SVG}${f}</li>`).join('')}
         </ul>
+        ${(p.speed === '500' && p.unit === 'Mbps') || (p.speed === '1' && p.unit === 'Gbps') ? `
+          <div class="plan-card__addons">
+            <p class="plan-card__addons-label">Add-On Available</p>
+            <div class="addon-dropdown" data-tier="${p.speed === '500' ? '500' : '1000'}" data-selected-id="">
+              <button type="button" class="addon-dropdown__trigger">
+                <span class="addon-dropdown__trigger-text">Select a device (optional)</span>
+                <svg class="addon-dropdown__chevron" viewBox="0 0 12 8" fill="none"><path d="M1 1.5l5 5 5-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <div class="addon-dropdown__panel">
+                <button type="button" class="addon-dropdown__option addon-dropdown__option--none" data-addon-id="" data-addon-name="" data-addon-price="">
+                  <span>None</span>
+                </button>
+                ${ADDON_TIERS[p.speed === '500' ? '500' : '1000'].map(a => `
+                  <button type="button" class="addon-dropdown__option" data-addon-id="${a.id}" data-addon-name="${a.name}" data-addon-price="${a.price}">
+                    <span class="addon-dropdown__option-name">${a.name}</span>
+                    <span class="addon-dropdown__option-price">${a.price}</span>
+                  </button>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+        ` : ''}
         <a href="${waBase + encodeURIComponent(`Hi, I'd like to sign up for the Maxis Home Fibre ${p.speed}${p.unit} plan at ${p.price}/month. Can you help me?${GOOGLE_TAG}`)}"
            class="plan-card__cta" target="_blank" rel="noopener">
           ${p.pop ? WA_IMG_BUBBLE : WA_IMG_OUTLINE} Apply Now
@@ -1646,11 +1861,14 @@
     const plan    = document.getElementById('f-plan');
     const planTxt = plan.options[plan.selectedIndex].text;
     const notes   = document.getElementById('f-msg').value.trim();
+
+    submitToGoogleSheet({ name, phone, address, plan: planTxt, notes, date: new Date().toLocaleString('en-MY') });
+
     const text    = `Hi, I'd like to enquire about Maxis Home Fibre.\n\nName: ${name}\nPhone: ${phone}\nAddress: ${address}\nPlan: ${planTxt}${notes ? '\n\nNotes: '+notes : ''}${GOOGLE_TAG}`;
     window.open(waBase + encodeURIComponent(text), '_blank');
   });
 
-  // ── Lead capture popup: shows once, after 15s dwell or on scroll-to-bottom ──
+  // ── Lead capture popup: shows once, after 30s dwell or on scroll-to-bottom ──
   (function () {
     const overlay = document.getElementById('lead-modal-overlay');
     const closeBtn = document.getElementById('lead-modal-close');
@@ -1672,8 +1890,8 @@
     }
     function closeLeadModal() { overlay.classList.remove('open'); }
 
-    // Trigger 1: 15 seconds on page
-    const dwellTimer = setTimeout(openLeadModal, 15000);
+    // Trigger 1: 30 seconds on page
+    const dwellTimer = setTimeout(openLeadModal, 30000);
 
     // Trigger 2: scrolled near the bottom of the page
     function checkScrollBottom() {
@@ -1698,14 +1916,7 @@
 
       // Silently POST into the Google Form → lands in the linked Google Sheet.
       // No-op until GOOGLE_FORM's placeholders (top of file) are replaced with real values.
-      if (!GOOGLE_FORM.formActionUrl.includes('PASTE_')) {
-        const body = new URLSearchParams();
-        body.append(GOOGLE_FORM.fields.name, name);
-        body.append(GOOGLE_FORM.fields.phone, phone);
-        body.append(GOOGLE_FORM.fields.plan, planTxt);
-        fetch(GOOGLE_FORM.formActionUrl, { method: 'POST', mode: 'no-cors', body })
-          .catch(() => {}); // no-cors gives an opaque response either way
-      }
+      submitToGoogleSheet({ name, phone, plan: planTxt, date: new Date().toLocaleString('en-MY') });
 
       form.classList.add('hide');
       thanks.classList.add('show');
