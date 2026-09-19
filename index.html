@@ -204,7 +204,9 @@
     .hero::before {
       content: '';
       position: absolute; inset: 0; z-index: 0;
-      background: rgba(0,0,0,0.08);
+      background:
+        linear-gradient(90deg, rgba(0,0,0,0.62) 0%, rgba(0,0,0,0.42) 32%, rgba(0,0,0,0.12) 58%, rgba(0,0,0,0.05) 100%),
+        linear-gradient(0deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0) 40%);
     }
     .hero__bg { display: none; }
     .hero__visual { display: none; }
