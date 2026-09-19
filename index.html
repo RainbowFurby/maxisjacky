@@ -393,12 +393,24 @@
     }
     .plans-section { background: var(--off); }
     .plans__grid {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
+      display: flex;
       gap: 14px;
+      overflow-x: auto;
+      padding-bottom: 10px;
       align-items: stretch;
+      scroll-snap-type: x proximity;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(64,199,6,0.4) transparent;
     }
+    .plans__grid::-webkit-scrollbar { height: 8px; }
+    .plans__grid::-webkit-scrollbar-track { background: transparent; }
+    .plans__grid::-webkit-scrollbar-thumb { background: rgba(64,199,6,0.35); border-radius: 999px; }
+    .plans__grid::-webkit-scrollbar-thumb:hover { background: rgba(64,199,6,0.55); }
     .plan-card {
+      flex: 0 0 280px;
+      width: 280px;
+      scroll-snap-align: start;
       background: var(--white);
       border: 1.5px solid #C7C7CE;
       border-radius: var(--r-lg);
@@ -406,7 +418,6 @@
       display: flex; flex-direction: column;
       position: relative;
       transition: border-color 0.15s, box-shadow 0.15s;
-      height: 100%;
       box-shadow: 0 3px 14px rgba(20,20,25,0.09), 0 1px 3px rgba(20,20,25,0.06);
     }
     .plan-card:hover {
@@ -1034,7 +1045,11 @@
 
     /* ─── RESPONSIVE ─────────────────────────── */
     @media (max-width: 900px) {
-      .plans__grid { grid-template-columns: repeat(3, 1fr); }
+      .plans__grid {
+        display: grid; grid-template-columns: repeat(3, 1fr);
+        overflow-x: visible; padding-bottom: 0;
+      }
+      .plan-card { flex: initial; width: auto; }
       .why__grid { grid-template-columns: repeat(2, 1fr); }
       .hero__inner { grid-template-columns: 1fr; }
       .hero__visual { display: none; }
@@ -1042,6 +1057,7 @@
     @media (max-width: 640px) {
       .section { padding: 56px 0; }
       .plans__grid { grid-template-columns: 1fr; }
+      .plan-card { width: auto; }
       .contact__inner { grid-template-columns: 1fr; }
       .form__row { grid-template-columns: 1fr; }
       .why__grid { grid-template-columns: 1fr; }
