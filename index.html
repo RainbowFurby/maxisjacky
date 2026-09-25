@@ -506,8 +506,18 @@
       margin-bottom: 4px;
     }
     .plan-card__promo {
-      font-size: 11px; font-weight: 500; color: var(--green-d);
+      font-size: 12px; font-weight: 500; color: var(--green-d);
       margin-bottom: 16px; min-height: 32px;
+      display: flex; flex-direction: column; gap: 4px; align-items: flex-start;
+    }
+    .plan-card__promo-badge {
+      display: inline-block;
+      background: var(--green); color: var(--white);
+      font-size: 13px; font-weight: 800; letter-spacing: -0.01em;
+      padding: 4px 11px; border-radius: 6px;
+    }
+    .plan-card--pop .plan-card__promo-badge {
+      background: var(--white); color: var(--green-dk);
     }
     .plan-card__feats {
       list-style: none; display: flex; flex-direction: column;
@@ -1803,18 +1813,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   // Plan data — New User vs Switch from Unifi
   const PLANS = {
     new: [
-      { speed: '100', unit: 'Mbps', price: 'RM89',  per: '/month', promo: 'FREE 3 Months',           feats: ['1 to 2 users, up to 5 devices', 'Full HD streaming and browsing', 'Free installation', 'Free Modem &amp; WiFi 6 Router'] },
-      { speed: '300', unit: 'Mbps', price: 'RM129', was: 'RM139', per: '/month', promo: 'FREE 6 Months + Rebate RM10 x 24 months', feats: ['3 to 4 users, multiple devices', '4K streaming and gaming', 'Free installation', 'Free Modem &amp; WiFi 6 Router'] },
-      { speed: '500', unit: 'Mbps', price: 'RM149', was: 'RM159', per: '/month', promo: 'FREE 6 Months + Rebate RM10 x 24 months', feats: ['5 to 7 users, multiple devices', '4K, gaming and WFH', 'TV add-on available', 'Free Modem &amp; WiFi 6 Router'], pop: true },
+      { speed: '100', unit: 'Mbps', price: 'RM89',  per: '/month', promo: 'Free Modem &amp; WiFi 6 Router',           feats: ['1 to 2 users, up to 5 devices', 'Full HD streaming and browsing', 'Free installation', 'Free Modem &amp; WiFi 6 Router'] },
+      { speed: '300', unit: 'Mbps', price: 'RM129', was: 'RM139', per: '/month', promo: 'FREE 3 Months + Rebate RM10 x 24 months', feats: ['3 to 4 users, multiple devices', '4K streaming and gaming', 'Free installation', 'Free Modem &amp; WiFi 6 Router'] },
+      { speed: '500', unit: 'Mbps', price: 'RM149', was: 'RM159', per: '/month', promo: 'FREE 3 Months + Rebate RM10 x 24 months', feats: ['5 to 7 users, multiple devices', '4K, gaming and WFH', 'TV add-on available', 'Free Modem &amp; WiFi 6 Router'], pop: true },
       { speed: '1',   unit: 'Gbps', price: 'RM249', per: '/month', promo: 'FREE 3 Months',                feats: ['7 to 10 users, multiple devices', 'Ultimate gaming and streaming', 'Free Modem &amp; WiFi 6 Router'] },
       { speed: '2',   unit: 'Gbps', price: 'RM319', per: '/month', promo: 'Free Modem &amp; WiFi 6 Router', feats: ['10 or more users, whole home', 'Unrivaled WiFi experience', 'Free Modem &amp; WiFi 6 Router'] },
     ],
     switch: [
-      { speed: '100', unit: 'Mbps', price: 'RM89',  per: '/month', promo: 'FREE 3 Months',                feats: ['1 to 2 users, up to 5 devices', 'Full HD streaming and browsing', 'Free installation', 'Free Modem &amp; WiFi 6 Router'] },
+      { speed: '100', unit: 'Mbps', price: 'RM89',  per: '/month', promo: 'FREE 3 Months when you switch',                feats: ['1 to 2 users, up to 5 devices', 'Full HD streaming and browsing', 'Free installation', 'Free Modem &amp; WiFi 6 Router'] },
       { speed: '300', unit: 'Mbps', price: 'RM129', was: 'RM139', per: '/month', promo: 'FREE 6 Months when you switch',            feats: ['3 to 4 users, multiple devices', '4K streaming and gaming', 'Free installation', 'Free Modem &amp; WiFi 6 Router'] },
       { speed: '500', unit: 'Mbps', price: 'RM149', was: 'RM159', per: '/month', promo: 'FREE 6 Months when you switch',            feats: ['5 to 7 users, multiple devices', '4K, gaming and WFH', 'TV add-on available', 'Free Modem &amp; WiFi 6 Router'], pop: true },
-      { speed: '1',   unit: 'Gbps', price: 'RM159', per: '/month', promo: 'RM30 only for first 3 months', feats: ['7 to 10 users, multiple devices', 'Ultimate gaming and streaming', 'Free Modem &amp; WiFi 6 Router'] },
-      { speed: '2',   unit: 'Gbps', price: 'RM319', per: '/month', promo: 'Free Modem &amp; WiFi 6 Router', feats: ['10 or more users, whole home', 'Unrivaled WiFi experience', 'Free Modem &amp; WiFi 6 Router'] },
+      { speed: '1',   unit: 'Gbps', price: 'RM249', per: '/month', promo: 'FREE 3 Months when you switch', feats: ['7 to 10 users, multiple devices', 'Ultimate gaming and streaming', 'Free Modem &amp; WiFi 6 Router'] },
+      { speed: '2',   unit: 'Gbps', price: 'RM319', per: '/month', promo: 'FREE 3 Months when you switch', feats: ['10 or more users, whole home', 'Unrivaled WiFi experience', 'Free Modem &amp; WiFi 6 Router'] },
     ],
   };
 
@@ -1832,7 +1842,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         ${p.was ? `<p class="plan-card__was">${p.was}/month</p>` : '<p class="plan-card__was" style="visibility:hidden">RM0/month</p>'}
         <p class="plan-card__price">${p.price}</p>
         <p class="plan-card__per">${p.per}</p>
-        <p class="plan-card__promo">${p.promo}</p>
+        <p class="plan-card__promo">${
+          (() => {
+            const m = p.promo.match(/^(FREE \d+ Months?)(.*)$/);
+            if (!m) return p.promo;
+            const rest = m[2].trim();
+            return `<span class="plan-card__promo-badge">${m[1]}</span>${rest ? `<span>${rest}</span>` : ''}`;
+          })()
+        }</p>
         <ul class="plan-card__feats">
           ${p.feats.map(f => `<li class="plan-card__feat">${CHECK_SVG}${f}</li>`).join('')}
         </ul>
