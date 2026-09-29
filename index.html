@@ -66,6 +66,45 @@
       });
       fetch(GOOGLE_FORM.formActionUrl, { method: 'POST', mode: 'no-cors', body }).catch(() => {});
     }
+
+    // ═══════════════════════════════════════════
+    // EMAILJS CONFIG — sends a real email, from your actual Gmail, straight to
+    // your client, with the submission details in the body. Separate from the
+    // Google Form/Sheet flow above; use one, the other, or both.
+    // TODO: replace with your real values once set up.
+    //   1. Go to emailjs.com → sign up (free tier is enough for this) → Email
+    //      Services → Add New Service → Gmail → connect the Gmail account you
+    //      want to send FROM (this can be your own Gmail; it doesn't have to be
+    //      your client's). Copy the Service ID it gives you.
+    //   2. Email Templates → Create New Template. Set the "To email" field to
+    //      your client's address. In the template body, use these variables so
+    //      the submission details show up: {{name}} {{phone}} {{address}}
+    //      {{plan}} {{notes}} {{date}} {{source}} — write it as a normal email,
+    //      e.g. "New lead from the website:\n\nName: {{name}}\nPhone: {{phone}}\n...".
+    //      Copy the Template ID.
+    //   3. Account → General → copy your Public Key.
+    //   4. Paste all three below.
+    // Leaving these as placeholders means this step is silently skipped — the
+    // Google Form/Sheet flow above still works independently either way.
+    const EMAILJS_CONFIG = {
+      publicKey:  "swgh6LWt5ba3A0Rwu",
+      serviceId:  "service_9qdbuab",
+      templateId: "template_nv93kfz",
+    };
+
+    function sendEmailNotification(fields, source) {
+      const cfg = EMAILJS_CONFIG;
+      if (typeof emailjs === 'undefined') return;
+      if ([cfg.publicKey, cfg.serviceId, cfg.templateId].some(v => v.includes('PASTE_'))) return;
+      emailjs.send(cfg.serviceId, cfg.templateId, { ...fields, source }, cfg.publicKey)
+        .catch(() => {}); // fail silently — WhatsApp/Sheet flow already succeeded regardless
+    }
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script>
+    if (typeof emailjs !== 'undefined' && !EMAILJS_CONFIG.publicKey.includes('PASTE_')) {
+      emailjs.init({ publicKey: EMAILJS_CONFIG.publicKey });
+    }
   </script>
 
   <title>Maxis Home Fibre Plans | Authorised Reseller — Free Router & Installation</title>
@@ -1016,6 +1055,18 @@
     }
     .form__submit:hover { background: #3D3D3F; }
     .form__note { font-size: 11px; color: var(--slate-l); text-align: center; font-weight: 400; }
+    .form-success {
+      display: none;
+      flex-direction: column; align-items: center; text-align: center;
+      padding: 48px 24px;
+      background: var(--white);
+      border-radius: var(--r-lg);
+      border: 1.5px solid var(--border);
+    }
+    .form-success.show { display: flex; }
+    .form-success svg { width: 48px; height: 48px; margin-bottom: 16px; }
+    .form-success h3 { font-size: 20px; font-weight: 700; color: var(--ink); margin-bottom: 8px; }
+    .form-success p { font-size: 14px; color: var(--slate-l); line-height: 1.5; }
 
     /* ─── FOOTER ─────────────────────────────── */
     .footer {
@@ -1497,6 +1548,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <button type="submit" class="form__submit">Send Enquiry</button>
         <p class="form__note">We'll reply via WhatsApp within 1 business day.</p>
       </form>
+      <div class="form-success" id="enquiry-success">
+        <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="11" stroke="#40C706" stroke-width="1.5"/><path d="M7 12.5l3.2 3.2L17 9" stroke="#40C706" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <h3>Thanks, your enquiry is in!</h3>
+        <p>An agent will contact you shortly to help with your plan.</p>
+      </div>
     </div>
   </div>
 </section>
@@ -1945,9 +2001,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     const notes   = document.getElementById('f-msg').value.trim();
 
     submitToGoogleSheet({ name, phone, address, plan: planTxt, notes, date: new Date().toLocaleString('en-MY') });
+    sendEmailNotification({ name, phone, address, plan: planTxt, notes, date: new Date().toLocaleString('en-MY') }, 'Enquiry form');
 
     const text    = `Hi, I'd like to enquire about Maxis Home Fibre.\n\nName: ${name}\nPhone: ${phone}\nAddress: ${address}\nPlan: ${planTxt}${notes ? '\n\nNotes: '+notes : ''}${GOOGLE_TAG}`;
     window.open(waBase + encodeURIComponent(text), '_blank');
+
+    document.getElementById('enquiry-form').style.display = 'none';
+    document.getElementById('enquiry-success').classList.add('show');
   });
 
   // ── Lead capture popup: shows once, after 30s dwell or on scroll-to-bottom ──
@@ -1999,6 +2059,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       // Silently POST into the Google Form → lands in the linked Google Sheet.
       // No-op until GOOGLE_FORM's placeholders (top of file) are replaced with real values.
       submitToGoogleSheet({ name, phone, plan: planTxt, date: new Date().toLocaleString('en-MY') });
+      sendEmailNotification({ name, phone, plan: planTxt, date: new Date().toLocaleString('en-MY') }, '30s/scroll popup');
 
       form.classList.add('hide');
       thanks.classList.add('show');
