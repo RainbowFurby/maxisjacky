@@ -100,6 +100,21 @@
       emailjs.send(cfg.serviceId, cfg.templateId, { ...fields, source }, cfg.publicKey)
         .catch(() => {}); // fail silently — WhatsApp/Sheet flow already succeeded regardless
     }
+
+    // ═══════════════════════════════════════════
+    // CONVERSION TRACKING (Google Tag Manager)
+    // Fires once per successful lead submit, from ALL three forms (hero, main
+    // enquiry, popup). In GTM, create a Custom Event trigger named
+    // "lead_form_submit" and attach the Google Ads Conversion tag to it.
+    // form_source tells you which form produced the lead. No name/phone is sent
+    // to GTM on purpose (keeps personal data out of analytics).
+    // ═══════════════════════════════════════════
+    function trackLead(formSource, plan) {
+      try {
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({ event: 'lead_form_submit', form_source: formSource, lead_plan: plan || '' });
+      } catch (e) {}
+    }
   </script>
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <script>
@@ -368,6 +383,53 @@
       text-shadow: 0 1px 4px rgba(0,0,0,0.5);
     }
     .trust-chip svg { width: 14px; height: 14px; fill: none; stroke: var(--green); flex-shrink: 0; stroke-width: 2.5; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4)); }
+
+    /* Hero lead form (card beside headline on desktop, stacked on mobile) */
+    .hero__inner.has-form {
+      max-width: none;
+      grid-template-columns: minmax(0, 1fr) 380px;
+      gap: 56px;
+      align-items: center;
+    }
+    .hero-form {
+      background: var(--white);
+      border-radius: 20px;
+      padding: 26px 24px 22px;
+      box-shadow: 0 18px 50px rgba(0,0,0,0.32);
+    }
+    .hero-form__title { font-size: 19px; font-weight: 700; color: var(--ink); letter-spacing: -0.02em; line-height: 1.25; margin-bottom: 4px; }
+    .hero-form__sub { font-size: 13px; color: var(--slate-l); line-height: 1.45; margin-bottom: 16px; }
+    .hero-form__field { margin-bottom: 11px; }
+    .hero-form__field label { display: block; font-size: 12px; font-weight: 600; color: var(--ink); margin-bottom: 5px; }
+    .hero-form__field input,
+    .hero-form__field select {
+      width: 100%; font: inherit; font-size: 15px; color: var(--ink);
+      background: var(--off); border: 1px solid var(--border);
+      border-radius: 12px; padding: 12px 14px; outline: none;
+      transition: border-color 0.15s var(--ease), box-shadow 0.15s var(--ease), background 0.15s var(--ease);
+    }
+    .hero-form__field input:focus,
+    .hero-form__field select:focus {
+      border-color: var(--green); background: var(--white);
+      box-shadow: 0 0 0 3px rgba(64,199,6,0.18);
+    }
+    .hero-form__field input.invalid { border-color: #D93025; box-shadow: 0 0 0 3px rgba(217,48,37,0.14); }
+    .hero-form__submit {
+      width: 100%; margin-top: 6px; cursor: pointer; border: none;
+      background: var(--green); color: var(--white);
+      font: inherit; font-size: 15px; font-weight: 700;
+      padding: 14px 20px; border-radius: 980px;
+      transition: background 0.15s var(--ease), transform 0.1s;
+    }
+    .hero-form__submit:hover { background: var(--green-d); }
+    .hero-form__submit:active { transform: scale(0.99); }
+    .hero-form__note { font-size: 11.5px; color: var(--slate-l); text-align: center; margin-top: 10px; }
+    .hero-form__thanks { display: none; flex-direction: column; align-items: center; text-align: center; padding: 10px 0 4px; }
+    .hero-form__thanks.show { display: flex; }
+    .hero-form__thanks svg { width: 48px; height: 48px; margin-bottom: 14px; }
+    .hero-form__thanks h3 { font-size: 19px; font-weight: 700; color: var(--ink); margin-bottom: 6px; }
+    .hero-form__thanks p { font-size: 14px; color: var(--slate-l); line-height: 1.5; }
+    .hero-form form.hide { display: none; }
 
     /* Hero right placeholder */
     .hero__visual {
@@ -1154,9 +1216,11 @@
       .plan-card { flex: initial; width: auto; }
       .why__grid { grid-template-columns: repeat(2, 1fr); }
       .hero__inner { grid-template-columns: 1fr; }
+      .hero__inner.has-form { grid-template-columns: 1fr; max-width: 580px; gap: 28px; }
       .hero__visual { display: none; }
     }
     @media (max-width: 640px) {
+      .hero-form { padding: 22px 18px 18px; border-radius: 18px; }
       .section { padding: 56px 0; }
       .plans__grid { grid-template-columns: 1fr; }
       .plan-card { width: auto; }
@@ -1205,7 +1269,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <section class="hero" aria-label="Hero">
 
   <div class="container">
-    <div class="hero__inner">
+    <div class="hero__inner has-form">
       <div class="hero__content">
         <h1 class="hero__h1">
           <span class="hero__green">FREE 6 Months</span><br>
@@ -1226,6 +1290,45 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <span class="trust-chip"><svg viewBox="0 0 16 16"><path d="M13 4L6 11 3 8" stroke="white" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>Free Installation</span>
           <span class="trust-chip"><svg viewBox="0 0 16 16"><path d="M13 4L6 11 3 8" stroke="white" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>Free WiFi 6 Router &amp; Modem</span>
           <span class="trust-chip"><svg viewBox="0 0 16 16"><path d="M13 4L6 11 3 8" stroke="white" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>Reply in 1 Minute</span>
+        </div>
+      </div>
+
+      <!-- Hero lead form -->
+      <div class="hero-form" id="hero-form-card">
+        <form id="hero-form" novalidate>
+          <p class="hero-form__title">Get your free call back</p>
+          <p class="hero-form__sub">Leave your number and an agent will contact you shortly with the best plan for your home.</p>
+          <div class="hero-form__field">
+            <label for="hf-name">Name</label>
+            <input type="text" id="hf-name" name="name" placeholder="Ahmad Razif" autocomplete="name" required />
+          </div>
+          <div class="hero-form__field">
+            <label for="hf-phone">Phone (WhatsApp)</label>
+            <input type="tel" id="hf-phone" name="phone" placeholder="0123456789" autocomplete="tel" inputmode="tel" required />
+          </div>
+          <div class="hero-form__field">
+            <label for="hf-plan">Plan you're interested in</label>
+            <select id="hf-plan" name="plan">
+              <option value="">Select a plan</option>
+              <option value="100">100Mbps at RM89/month</option>
+              <option value="300">300Mbps at RM129/month</option>
+              <option value="500" selected>500Mbps at RM149/month</option>
+              <option value="1000">1Gbps at RM249/month</option>
+              <option value="2000">2Gbps at RM319/month</option>
+              <option value="unsure">Not sure, help me choose</option>
+            </select>
+          </div>
+          <button type="submit" class="hero-form__submit">Get Free Call Back</button>
+          <p class="hero-form__note">No obligation. We usually reply within 1 minute.</p>
+        </form>
+        <div class="hero-form__thanks" id="hero-form-thanks">
+          <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="11" stroke="#40C706" stroke-width="1.5"/><path d="M7 12.5l3.2 3.2L17 9" stroke="#40C706" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <h3>Thanks, we've got your details!</h3>
+          <p>An agent will contact you shortly.</p>
+          <a href="#" class="lead-modal__wa" id="hero-form-wa-cta" target="_blank" rel="noopener" style="margin-top: 16px; max-width: 260px;">
+            <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path transform="translate(2,2)" fill="currentColor" d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.9 7.9 0 0 0 13.6 2.326zM7.994 14.521a6.6 6.6 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.56 6.56 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592m3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.588-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.1-.445-1.076-.61-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.73.73 0 0 0-.529.247c-.182.198-.691.677-.691 1.652 0 .975.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.99.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.337-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232"/></svg>
+            Prefer WhatsApp? Chat Now
+          </a>
         </div>
       </div>
     </div>
@@ -2022,6 +2125,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     submitToGoogleSheet({ name, phone, address, plan: planTxt, notes, date: new Date().toLocaleString('en-MY') });
     sendEmailNotification({ name, phone, address, plan: planTxt, notes, date: new Date().toLocaleString('en-MY') }, 'Enquiry form');
+    trackLead('enquiry_form', planTxt);
 
     const text    = `Hi, I'd like to enquire about Maxis Home Fibre.\n\nName: ${name}\nPhone: ${phone}\nAddress: ${address}\nPlan: ${planTxt}${notes ? '\n\nNotes: '+notes : ''}${GOOGLE_TAG}`;
     const waLink  = waBase + encodeURIComponent(text);
@@ -2031,6 +2135,44 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     document.getElementById('enquiry-form').style.display = 'none';
     document.getElementById('enquiry-success').classList.add('show');
   });
+
+  // ── Hero lead form: name + phone + plan → Google Sheet + Gmail + GTM conversion ──
+  (function () {
+    const form   = document.getElementById('hero-form');
+    const thanks = document.getElementById('hero-form-thanks');
+    if (!form) return;
+    const nameEl = document.getElementById('hf-name');
+    const phoneEl = document.getElementById('hf-phone');
+    [nameEl, phoneEl].forEach(el => el.addEventListener('input', () => el.classList.remove('invalid')));
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const name  = nameEl.value.trim();
+      const phone = phoneEl.value.trim();
+      const digits = phone.replace(/\D/g, '');
+      let bad = null;
+      if (!name)               { nameEl.classList.add('invalid');  bad = bad || nameEl; }
+      if (digits.length < 9)   { phoneEl.classList.add('invalid'); bad = bad || phoneEl; }
+      if (bad) { bad.focus(); return; }
+
+      const plan    = document.getElementById('hf-plan');
+      const planTxt = plan.options[plan.selectedIndex].text;
+      const when    = new Date().toLocaleString('en-MY');
+
+      submitToGoogleSheet({ name, phone, plan: planTxt, date: when });
+      sendEmailNotification({ name, phone, plan: planTxt, date: when }, 'Hero form');
+      trackLead('hero_form', planTxt);
+
+      // Lead is captured, so don't show the 15s popup to this visitor afterwards.
+      try { sessionStorage.setItem('leadPopupSeen', '1'); } catch (err) {}
+
+      const text = `Hi, I'd like a free call back about Maxis Home Fibre.\n\nName: ${name}\nPhone: ${phone}\nPlan: ${planTxt}${GOOGLE_TAG}`;
+      document.getElementById('hero-form-wa-cta').href = waBase + encodeURIComponent(text);
+
+      form.classList.add('hide');
+      thanks.classList.add('show');
+    });
+  })();
 
   // ── Lead capture popup: shows once, after 15s dwell or after scrolling past the plans section ──
   (function () {
@@ -2082,7 +2224,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       // Silently POST into the Google Form → lands in the linked Google Sheet.
       // No-op until GOOGLE_FORM's placeholders (top of file) are replaced with real values.
       submitToGoogleSheet({ name, phone, plan: planTxt, date: new Date().toLocaleString('en-MY') });
-      sendEmailNotification({ name, phone, plan: planTxt, date: new Date().toLocaleString('en-MY') }, '30s/scroll popup');
+      sendEmailNotification({ name, phone, plan: planTxt, date: new Date().toLocaleString('en-MY') }, 'Popup (15s / scrolled past plans)');
+      trackLead('popup_form', planTxt);
 
       form.classList.add('hide');
       thanks.classList.add('show');
