@@ -1385,7 +1385,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <span class="addon-card__badge">RM30<span>/mth</span></span>
           <h3 class="addon-card__name">Samsung UHD 65"</h3>
           <p class="addon-card__detail">with Free Soundbar</p>
-          <p class="addon-card__plan">With 1Gbps plan only</p>
+          <p class="addon-card__plan">With 1Gbps plan · New users only</p>
         </div>
       </div>
 
@@ -1397,7 +1397,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <span class="addon-card__badge">RM20<span>/mth</span></span>
           <h3 class="addon-card__name">iPad 11th Gen</h3>
           <p class="addon-card__detail">64GB</p>
-          <p class="addon-card__plan">With 1Gbps plan only</p>
+          <p class="addon-card__plan">With 1Gbps plan · New users only</p>
         </div>
       </div>
 
@@ -1409,7 +1409,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <span class="addon-card__badge">RM50<span>/mth</span></span>
           <h3 class="addon-card__name">PS5</h3>
           <p class="addon-card__detail">with 2 Controllers</p>
-          <p class="addon-card__plan">With 1Gbps plan only</p>
+          <p class="addon-card__plan">With 1Gbps plan · New users only</p>
         </div>
       </div>
 
@@ -1421,7 +1421,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <span class="addon-card__badge">RM14<span>/mth</span></span>
           <h3 class="addon-card__name">LG UHD AI 55"</h3>
           <p class="addon-card__detail">4K Smart TV</p>
-          <p class="addon-card__plan">With 1Gbps plan only</p>
+          <p class="addon-card__plan">With 1Gbps plan · New users only</p>
         </div>
       </div>
 
@@ -1433,7 +1433,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <span class="addon-card__badge">RM53<span>/mth</span></span>
           <h3 class="addon-card__name">TCL UHD 75"</h3>
           <p class="addon-card__detail">Google TV</p>
-          <p class="addon-card__plan">With 1Gbps plan only</p>
+          <p class="addon-card__plan">With 1Gbps plan · New users only</p>
         </div>
       </div>
 
@@ -1855,7 +1855,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       const badge = card.querySelector('.addon-card__badge');
       const planLine = card.querySelector('.addon-card__plan');
       if (badge) badge.innerHTML = `${a.price.replace('/mth', '')}<span>/mth</span>`;
-      if (planLine) planLine.textContent = `With ${TIER_LABEL[addonTier]} plan only`;
+      if (planLine) planLine.textContent = `With ${TIER_LABEL[addonTier]} plan · New users only`;
     });
   }
 
